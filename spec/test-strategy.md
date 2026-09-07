@@ -34,14 +34,15 @@ Repository tests should verify:
 Test:
 
 * create ticket
-* list tickets
+* list tickets (including required list item fields per AC-003)
 * get ticket
 * update ticket
 * add comment
 * status transition
 * validation errors
-* not-found errors
+* not-found errors (get, update, comment per AC-005, AC-021, AC-022)
 * invalid transitions
+* rejection of `status` in `PUT /api/tickets/{id}` (AC-023)
 
 ---
 
@@ -87,6 +88,8 @@ Test:
 * blank comment
 * invalid ticket ID
 * invalid status
+* field values exceeding maximum length (title 200, description 5000, assignee 100, comment text 2000)
+* `status` field in `PUT /api/tickets/{id}` request body
 
 ---
 
@@ -113,8 +116,14 @@ Example:
 
 ```text
 REQ-001 → Ticket creation tests
-REQ-004 → Ticket update tests
+REQ-002 → Ticket list field tests (AC-003)
+REQ-004 → Ticket update and PUT status rejection tests (AC-021, AC-023)
+REQ-005 → Comment and not-found comment tests (AC-022)
 REQ-009 → Validation/state-machine tests
+BR-004 → Not-found update/comment tests
+BR-006 → Status update rejection tests
+NFR-004 → Consistent API error format tests
+NFR-005 → Security/no-secrets verification (AC-020)
 ```
 
 ---

@@ -28,7 +28,8 @@
 
 **Given** tickets exist
 **When** the user requests the ticket list
-**Then** the system shall return the tickets successfully.
+**Then** the system shall return the tickets successfully
+**And** each list item shall include `id`, `title`, `priority`, `status`, `assignee`, and `createdAt`.
 
 ---
 
@@ -104,7 +105,7 @@
 
 ## AC-011 — Valid OPEN Transition
 
-**Requirement:** REQ-001, REQ-009
+**Requirement:** REQ-009
 
 **Given** a ticket is `OPEN`
 **When** it is transitioned to `IN_PROGRESS`
@@ -200,3 +201,33 @@
 **When** source files and configuration are inspected
 **Then** no secrets or credentials shall be committed.
 
+---
+
+## AC-021 — Update Ticket Not Found
+
+**Requirement:** REQ-004, BR-004
+
+**Given** a ticket ID does not exist
+**When** an update request is submitted for that ticket
+**Then** the backend shall return a not-found response with a meaningful error.
+
+---
+
+## AC-022 — Comment on Missing Ticket
+
+**Requirement:** REQ-005, BR-004
+
+**Given** a ticket ID does not exist
+**When** a comment is submitted for that ticket
+**Then** the backend shall return a not-found response with a meaningful error.
+
+---
+
+## AC-023 — Reject Status in Update
+
+**Requirement:** REQ-004, REQ-009, BR-006
+
+**Given** an existing ticket
+**When** a `PUT /api/tickets/{id}` request includes a `status` field
+**Then** the backend shall reject the request with a `400` validation or business error
+**And** the ticket status shall remain unchanged.

@@ -111,7 +111,9 @@ The system shall allow updating:
 
 Status changes shall not be performed through the general update operation.
 
-Status changes shall use the dedicated state-transition operation.
+If a `status` field is included in a `PUT /api/tickets/{id}` request, the backend shall reject the request with a meaningful `400` validation or business error.
+
+Status changes shall use the dedicated state-transition operation (`PATCH /api/tickets/{id}/status`).
 
 The backend shall validate update requests.
 
@@ -180,10 +182,15 @@ Validation shall cover:
 
 * required fields
 * empty/blank values
-* field length constraints
+* field length constraints:
+  * title: max 200 characters
+  * description: max 5000 characters
+  * assignee: max 100 characters
+  * comment text: max 2000 characters
 * valid enum values
 * invalid ticket IDs
 * invalid status transitions
+* rejection of `status` in `PUT /api/tickets/{id}` requests
 
 Validation failures shall return structured and meaningful API errors.
 
@@ -274,7 +281,7 @@ The implementation must consider:
 * non-existent ticket ID
 * duplicate/invalid requests where applicable
 * blank comment
-* search with blank keyword
+* search with blank keyword (blank or omitted keyword shall not apply a search filter)
 * search returning zero results
 * filter returning zero results
 * invalid state transition
@@ -282,6 +289,8 @@ The implementation must consider:
 * database failure
 * backend unavailable
 * malformed request payload
+* field values exceeding maximum length
+* `status` field supplied in `PUT /api/tickets/{id}` request body
 
 ---
 

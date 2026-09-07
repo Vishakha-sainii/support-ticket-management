@@ -2,21 +2,46 @@
 
 Act as a Senior Java 21 / Spring Boot / React engineer.
 
-Read the specification before changing code.
+Your goal is to implement the **next logical feature group** from `docs/tasks.md`, not just one task at a time.
+
+## Before Implementation
 
 Read:
 
-* relevant files under spec/
-* rules/java-springboot.md
-* rules/testing.md
-* rules/api-standards.md
-* docs/tasks.md
+* relevant files under `spec/`
+* `rules/java-springboot.md`
+* `rules/testing.md`
+* `rules/api-standards.md`
+* `docs/tasks.md`
+* existing implementation/code related to the incomplete tasks
 
-Find the first incomplete implementation task.
+First inspect the current code and `docs/tasks.md`.
 
-Implement ONLY that task and its direct dependencies.
+Determine which tasks are already genuinely completed. Do not reimplement completed work.
 
-Do not implement future tasks.
+Then identify the **next cohesive group of incomplete tasks** that can safely be implemented together based on dependencies.
+
+## Implementation Scope
+
+Implement the next logical group of related tasks.
+
+Prefer grouping tasks that form one complete feature, for example:
+
+* project/database foundation
+* domain/entities/repositories
+* ticket CRUD
+* comments/search/filter
+* state machine/status transitions/error handling
+* frontend feature groups
+* testing/documentation/review tasks
+
+Do NOT implement the entire remaining project in one session.
+
+Do NOT implement unrelated future features.
+
+Do NOT stop after every individual task if the tasks belong to the same cohesive feature group.
+
+Continue until the current logical feature group is complete and tested.
 
 ## Rules
 
@@ -25,31 +50,49 @@ Do not implement future tasks.
 * Follow the data model.
 * Follow the state machine.
 * Keep controllers thin.
-* Keep business logic in appropriate service/domain components.
+* Keep business logic in service/domain components.
 * Validate backend input.
 * Use consistent error handling.
 * Never hardcode secrets.
 * Do not introduce unnecessary technologies.
+* Do not modify requirements to make implementation easier.
+* Do not weaken or remove existing tests.
+* Do not implement unrelated tasks.
+* Do not duplicate existing functionality.
 
 ## Testing
 
-For the current task:
+For all tasks implemented in this session:
 
-1. add/update appropriate tests
-2. run relevant tests
-3. fix failures caused by the implementation
-4. do not delete or weaken tests
+1. Add/update appropriate tests.
+2. Run relevant tests.
+3. Fix failures caused by the implementation.
+4. Do not delete or weaken tests.
+5. Ensure existing functionality continues to work.
 
-## Completion
+## Task Tracking
 
 After successful implementation:
 
-* update docs/tasks.md
-* summarize files changed
-* summarize tests executed
-* identify assumptions or deviations
+* Update `docs/tasks.md`.
+* Mark **only genuinely completed tasks** as completed.
+* Keep incomplete tasks unchanged.
+* Do not mark a task complete merely because some code was created; verify its acceptance criteria and tests.
 
-Stop after the current task.
+## Completion
 
-Do not automatically implement the next task.
+At the end, report:
+
+* Logical feature group implemented.
+* TASK IDs completed.
+* TASK IDs remaining.
+* Files changed.
+* Tests added/updated.
+* Tests executed and results.
+* Assumptions or deviations.
+* Any blockers for the next implementation group.
+
+Then STOP.
+
+Do not automatically implement another logical feature group.
 

@@ -6,18 +6,18 @@ Represents a support request.
 
 ### Fields
 
-| Field       | Type      | Required        | Description              |
-| ----------- | --------- | --------------- | ------------------------ |
-| id          | Long/UUID | Yes             | Unique ticket identifier |
-| title       | String    | Yes             | Ticket title             |
-| description | String    | Yes             | Ticket description       |
-| priority    | Priority  | Yes             | Ticket priority          |
-| status      | Status    | Yes             | Current lifecycle status |
-| assignee    | String    | Yes/Conditional | Assigned user/person     |
-| createdAt   | Timestamp | Yes             | Creation timestamp       |
-| updatedAt   | Timestamp | Yes             | Last update timestamp    |
+| Field       | Type      | Required | Max Length | Description              |
+| ----------- | --------- | -------- | ---------- | ------------------------ |
+| id          | Long      | Yes      | —          | Unique ticket identifier |
+| title       | String    | Yes      | 200        | Ticket title             |
+| description | String    | Yes      | 5000       | Ticket description       |
+| priority    | Priority  | Yes      | —          | Ticket priority          |
+| status      | Status    | Yes      | —          | Current lifecycle status |
+| assignee    | String    | Yes      | 100        | Assigned user/person     |
+| createdAt   | Timestamp | Yes      | —          | Creation timestamp       |
+| updatedAt   | Timestamp | Yes      | —          | Last update timestamp    |
 
-The exact ID strategy may be selected during implementation provided the API contract remains consistent.
+Ticket and comment identifiers use `Long` with database-generated values.
 
 ---
 
@@ -25,12 +25,12 @@ The exact ID strategy may be selected during implementation provided the API con
 
 Represents a comment associated with a ticket.
 
-| Field     | Type      | Required |
-| --------- | --------- | -------- |
-| id        | Long/UUID | Yes      |
-| ticketId  | Long/UUID | Yes      |
-| text      | String    | Yes      |
-| createdAt | Timestamp | Yes      |
+| Field     | Type      | Required | Max Length |
+| --------- | --------- | -------- | ---------- |
+| id        | Long      | Yes      | —          |
+| ticketId  | Long      | Yes      | —          |
+| text      | String    | Yes      | 2000       |
+| createdAt | Timestamp | Yes      | —          |
 
 Relationship:
 
@@ -75,15 +75,15 @@ CANCELLED
 
 Ticket:
 
-* title must not be blank
-* description must not be blank
+* title must not be blank and must not exceed 200 characters
+* description must not be blank and must not exceed 5000 characters
 * priority must be valid
 * status must be valid
-* assignee must satisfy the defined validation rules
+* assignee must not be blank and must not exceed 100 characters
 
 Comment:
 
-* text must not be blank
+* text must not be blank and must not exceed 2000 characters
 * comment must reference an existing ticket
 
 ---
