@@ -54,6 +54,8 @@ Unless explicitly required later:
 
 # 3. Functional Requirements
 
+Unless stated otherwise, ticket operations require authentication per REQ-011 and REQ-012.
+
 ## REQ-001 — Create Ticket
 
 The system shall allow an authenticated **ADMIN** user to create a support ticket.
@@ -184,7 +186,7 @@ The backend shall validate incoming requests.
 Validation shall cover:
 
 * required fields
-* empty/blank values
+* empty, blank, or whitespace-only values
 * field length constraints:
   * title: max 200 characters
   * description: max 5000 characters
@@ -203,6 +205,8 @@ Validation failures shall return structured and meaningful API errors.
 
 The frontend shall display meaningful errors when:
 
+* authentication fails (invalid credentials, session expired)
+* authorization is denied (`403 Forbidden`)
 * validation fails
 * a ticket does not exist
 * an API request fails
@@ -435,7 +439,7 @@ A ticket must exist before it can be updated or commented on.
 
 ## BR-005
 
-Required fields cannot be blank.
+Required fields cannot be blank or whitespace-only.
 
 ## BR-006
 

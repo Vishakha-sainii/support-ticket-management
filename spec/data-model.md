@@ -53,8 +53,6 @@ HIGH
 CRITICAL
 ```
 
-The implementation may use a different priority set only if required by the assignment specification; otherwise use the above standard set.
-
 ---
 
 # 4. Status
@@ -75,15 +73,15 @@ CANCELLED
 
 Ticket:
 
-* title must not be blank and must not exceed 200 characters
-* description must not be blank and must not exceed 5000 characters
-* priority must be valid
+* title must not be blank or whitespace-only and must not exceed 200 characters
+* description must not be blank or whitespace-only and must not exceed 5000 characters
+* priority must be valid and present
 * status must be valid
-* assignee must not be blank and must not exceed 100 characters
+* assignee must not be blank or whitespace-only and must not exceed 100 characters
 
 Comment:
 
-* text must not be blank and must not exceed 2000 characters
+* text must not be blank or whitespace-only and must not exceed 2000 characters
 * comment must reference an existing ticket
 
 ---

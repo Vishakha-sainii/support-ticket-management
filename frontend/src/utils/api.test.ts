@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { ApiClientError, getErrorMessage } from '../utils/api';
+import { describe, expect, it, vi } from 'vitest';
+import { ApiClientError, apiRequest, getErrorMessage } from './api';
 import type { ApiError } from '../types/ticket';
 
 describe('getErrorMessage', () => {
@@ -22,5 +22,25 @@ describe('getErrorMessage', () => {
 
   it('returns Error message for standard errors', () => {
     expect(getErrorMessage(new Error('Network failed'))).toBe('Network failed');
+  });
+});
+
+describe('apiRequest', () => {
+  it('sends credentials with requests', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ([]),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await apiRequest('/api/tickets');
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/tickets',
+      expect.objectContaining({ credentials: 'include' }),
+    );
+
+    vi.unstubAllGlobals();
   });
 });

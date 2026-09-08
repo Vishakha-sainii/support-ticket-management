@@ -4,8 +4,8 @@
 
 **Requirement:** REQ-001
 
-**Given** the user provides valid ticket information
-**When** the user submits the create-ticket request
+**Given** an authenticated ADMIN provides valid ticket information
+**When** the ADMIN submits the create-ticket request
 **Then** the system shall create and persist the ticket
 **And** the initial status shall be `OPEN`.
 
@@ -15,8 +15,8 @@
 
 **Requirement:** REQ-001, REQ-009
 
-**Given** required ticket information is missing or invalid
-**When** the user submits the request
+**Given** an authenticated ADMIN submits a create-ticket request with missing or invalid required information
+**When** the request is processed
 **Then** the backend shall reject the request
 **And** return a meaningful validation error.
 

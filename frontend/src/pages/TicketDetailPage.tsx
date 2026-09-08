@@ -3,6 +3,8 @@ import { Link, useParams } from 'react-router-dom';
 import { CommentSection } from '../components/CommentSection';
 import { ErrorMessage } from '../components/ErrorMessage';
 import { LoadingState } from '../components/LoadingState';
+import { PriorityBadge } from '../components/PriorityBadge';
+import { StatusBadge } from '../components/StatusBadge';
 import { StatusActions } from '../components/StatusActions';
 import { TicketForm, type TicketFormValues } from '../components/TicketForm';
 import { fetchTicket, updateTicket } from '../services/ticketService';
@@ -90,8 +92,10 @@ export function TicketDetailPage() {
       ) : (
         <div className="card">
           <h2>{ticket.title}</h2>
-          <p className="meta">
-            #{ticket.id} · {ticket.priority} · <span className="status-badge">{ticket.status}</span>
+          <p className="meta ticket-meta">
+            <span>#{ticket.id}</span>
+            <PriorityBadge priority={ticket.priority} />
+            <StatusBadge status={ticket.status} />
           </p>
           <p>{ticket.description}</p>
           <p className="meta">Assignee: {ticket.assignee}</p>

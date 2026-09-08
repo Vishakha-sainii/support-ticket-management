@@ -1,22 +1,22 @@
-import { Link, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
+import { AdminRoute } from './components/AdminRoute';
+import { ProtectedLayout } from './components/ProtectedLayout';
 import { CreateTicketPage } from './pages/CreateTicketPage';
+import { LoginPage } from './pages/LoginPage';
 import { TicketDetailPage } from './pages/TicketDetailPage';
 import { TicketListPage } from './pages/TicketListPage';
 
 export function App() {
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>
-          <Link to="/" className="app-title">Ticket Management System</Link>
-        </h1>
-      </header>
-
-      <Routes>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route element={<ProtectedLayout />}>
         <Route path="/" element={<TicketListPage />} />
-        <Route path="/tickets/new" element={<CreateTicketPage />} />
         <Route path="/tickets/:id" element={<TicketDetailPage />} />
-      </Routes>
-    </div>
+        <Route element={<AdminRoute />}>
+          <Route path="/tickets/new" element={<CreateTicketPage />} />
+        </Route>
+      </Route>
+    </Routes>
   );
 }

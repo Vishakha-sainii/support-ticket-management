@@ -32,9 +32,20 @@ describe('TicketTable', () => {
     );
 
     expect(screen.getByText('Login issue')).toBeInTheDocument();
-    expect(screen.getByText('HIGH')).toBeInTheDocument();
-    expect(screen.getByText('OPEN')).toBeInTheDocument();
+    expect(screen.getByLabelText('Priority: HIGH')).toBeInTheDocument();
+    expect(screen.getByLabelText('Status: OPEN')).toBeInTheDocument();
     expect(screen.getByText('support-user')).toBeInTheDocument();
     expect(screen.getByText('1')).toBeInTheDocument();
+  });
+
+  it('wraps table in responsive container', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <TicketTable tickets={[sampleTicket]} />
+      </MemoryRouter>,
+    );
+
+    expect(container.querySelector('.table-container')).toBeInTheDocument();
+    expect(container.querySelector('.ticket-table')).toBeInTheDocument();
   });
 });

@@ -13,3 +13,13 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
   flyway:
     enabled: false
+
+app:
+  security:
+    demo-users:
+      - username: admin
+        password: admin123
+        role: ADMIN
+      - username: user
+        password: user123
+        role: USER

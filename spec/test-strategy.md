@@ -84,6 +84,8 @@ Test:
 
 * blank title
 * blank description
+* blank assignee
+* whitespace-only mandatory field values
 * invalid priority
 * blank comment
 * invalid ticket ID
@@ -98,7 +100,8 @@ Test:
 At least one integration-level flow should verify:
 
 ```text
-Create ticket
+Authenticate as ADMIN
+→ create ticket
 → retrieve ticket
 → update ticket
 → add comment

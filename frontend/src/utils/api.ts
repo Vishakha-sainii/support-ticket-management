@@ -55,6 +55,10 @@ export async function apiRequest<T>(
     ...options.headers,
   };
 
-  const response = await fetch(path, { ...options, headers });
+  const response = await fetch(path, {
+    ...options,
+    headers,
+    credentials: 'include',
+  });
   return parseResponse<T>(response);
 }

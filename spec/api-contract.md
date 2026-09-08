@@ -140,12 +140,13 @@ Forbidden example (`USER` attempting `POST /api/tickets`):
 
 # Field Constraints
 
-| Field       | Max Length | Notes                |
-| ----------- | ---------- | -------------------- |
-| title       | 200        | Required, not blank  |
-| description | 5000       | Required, not blank  |
-| assignee    | 100        | Required, not blank  |
-| comment text | 2000       | Required, not blank  |
+| Field       | Max Length | Notes                                      |
+| ----------- | ---------- | ------------------------------------------ |
+| title       | 200        | Required, not blank or whitespace-only     |
+| description | 5000       | Required, not blank or whitespace-only     |
+| priority    | —          | Required; one of `LOW`, `MEDIUM`, `HIGH`, `CRITICAL` |
+| assignee    | 100        | Required, not blank or whitespace-only     |
+| comment text | 2000       | Required, not blank or whitespace-only     |
 
 Requests exceeding these limits shall be rejected with a `400` validation error.
 
@@ -270,6 +271,7 @@ Success:
   "comments": [
     {
       "id": 10,
+      "ticketId": 1,
       "text": "Investigating the issue.",
       "createdAt": "2026-01-01T11:00:00Z"
     }

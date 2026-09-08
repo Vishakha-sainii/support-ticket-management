@@ -302,7 +302,7 @@ Demo credentials shall be documented in `README.md` with a development/demo-only
 
 Authorization shall be enforced by Spring Security:
 
-* `SecurityFilterChain` protects `/api/**` endpoints
+* `SecurityFilterChain` secures `/api/**`; public endpoints (`POST /api/auth/login`, `GET /api/health` when enabled) remain unauthenticated per the API contract
 * `POST /api/tickets` requires `ROLE_ADMIN`
 * Other ticket endpoints require authentication; `USER` and `ADMIN` are both permitted unless explicitly restricted
 * Unauthenticated requests receive `401 Unauthorized`

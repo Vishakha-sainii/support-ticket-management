@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import { PriorityBadge } from './PriorityBadge';
+import { StatusBadge } from './StatusBadge';
 import type { TicketSummary } from '../types/ticket';
 
 interface TicketTableProps {
@@ -19,7 +21,8 @@ export function TicketTable({ tickets }: TicketTableProps) {
   }
 
   return (
-    <table className="ticket-table">
+    <div className="table-container">
+      <table className="ticket-table">
       <thead>
         <tr>
           <th>ID</th>
@@ -37,13 +40,14 @@ export function TicketTable({ tickets }: TicketTableProps) {
             <td>
               <Link to={`/tickets/${ticket.id}`}>{ticket.title}</Link>
             </td>
-            <td>{ticket.priority}</td>
-            <td><span className="status-badge">{ticket.status}</span></td>
+            <td><PriorityBadge priority={ticket.priority} /></td>
+            <td><StatusBadge status={ticket.status} /></td>
             <td>{ticket.assignee}</td>
             <td>{formatDate(ticket.createdAt)}</td>
           </tr>
         ))}
       </tbody>
     </table>
+    </div>
   );
 }

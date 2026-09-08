@@ -4,10 +4,11 @@ Copy-paste examples for testing the Support Ticket Management REST API.
 
 **Base URL (default):** `http://localhost:8080`
 
-Set this once in your terminal for shorter commands:
+Set these once in your terminal for shorter commands:
 
 ```bash
 export BASE_URL=http://localhost:8080
+export COOKIE_JAR=/tmp/support-ticket-cookies.txt
 ```
 
 Start the backend before running these:
@@ -18,13 +19,19 @@ cd backend
 ./gradlew bootRun
 ```
 
+> **Authentication:** All ticket endpoints require an authenticated session. Use the login examples below first, then pass `-b "$COOKIE_JAR"` on subsequent requests. The UI uses the same session cookie mechanism.
+
+> **Demo credentials (development only — not for production):**
+> - ADMIN: `admin` / `admin123`
+> - USER: `user` / `user123`
+
 For formatted JSON output, pipe through `jq` if installed: `| jq`
 
 ---
 
 ## Health Check (development)
 
-Not part of the formal API contract; useful to verify the server is running.
+Not part of the formal API contract; useful to verify the server is running. Does **not** require authentication.
 
 ```bash
 curl -s "$BASE_URL/api/health"
@@ -38,12 +45,100 @@ curl -s "$BASE_URL/api/health"
 
 ---
 
-## 1. Create Ticket
+## Authentication
 
-**POST** `/api/tickets` — creates a ticket with status `OPEN`.
+### Login as ADMIN
 
 ```bash
-curl -s -X POST "$BASE_URL/api/tickets" \
+rm -f "$COOKIE_JAR"
+
+curl -s -c "$COOKIE_JAR" -X POST "$BASE_URL/api/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "admin",
+    "password": "admin123"
+  }'
+```
+
+**Expected:** `200 OK`
+
+```json
+{
+  "username": "admin",
+  "role": "ADMIN"
+}
+```
+
+### Login as USER
+
+```bash
+rm -f "$COOKIE_JAR"
+
+curl -s -c "$COOKIE_JAR" -X POST "$BASE_URL/api/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "user",
+    "password": "user123"
+  }'
+```
+
+**Expected:** `200 OK`
+
+```json
+{
+  "username": "user",
+  "role": "USER"
+}
+```
+
+### Get current user
+
+```bash
+curl -s -b "$COOKIE_JAR" "$BASE_URL/api/auth/me"
+```
+
+**Expected:** `200 OK` — returns `username` and `role`
+
+### Invalid credentials
+
+```bash
+curl -s -X POST "$BASE_URL/api/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "nobody",
+    "password": "wrong-password"
+  }'
+```
+
+**Expected:** `401 Unauthorized`, `error: "AUTHENTICATION_ERROR"`
+
+### Unauthenticated ticket access
+
+```bash
+rm -f "$COOKIE_JAR"
+curl -s "$BASE_URL/api/tickets"
+```
+
+**Expected:** `401 Unauthorized`, `error: "AUTHENTICATION_ERROR"`
+
+### Logout
+
+```bash
+curl -s -b "$COOKIE_JAR" -c "$COOKIE_JAR" -X POST "$BASE_URL/api/auth/logout"
+```
+
+**Expected:** `204 No Content`
+
+---
+
+## 1. Create Ticket
+
+**POST** `/api/tickets` — creates a ticket with status `OPEN`. **Requires ADMIN role.**
+
+Log in as ADMIN first (see [Authentication](#authentication)), then:
+
+```bash
+curl -s -b "$COOKIE_JAR" -X POST "$BASE_URL/api/tickets" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Unable to login",
@@ -63,13 +158,45 @@ Save the returned `id` for later commands:
 export TICKET_ID=1
 ```
 
+### Forbidden: USER cannot create tickets
+
+Log in as USER, then:
+
+```bash
+curl -s -b "$COOKIE_JAR" -X POST "$BASE_URL/api/tickets" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Forbidden ticket",
+    "description": "Should not be created",
+    "priority": "HIGH",
+    "assignee": "support-user"
+  }'
+```
+
+**Expected:** `403 Forbidden`, `error: "FORBIDDEN"`
+
 ### Validation error (blank title)
 
 ```bash
-curl -s -X POST "$BASE_URL/api/tickets" \
+curl -s -b "$COOKIE_JAR" -X POST "$BASE_URL/api/tickets" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "",
+    "description": "Description",
+    "priority": "HIGH",
+    "assignee": "support-user"
+  }'
+```
+
+**Expected:** `400 Bad Request`, `error: "VALIDATION_ERROR"`
+
+### Validation error (whitespace-only title)
+
+```bash
+curl -s -b "$COOKIE_JAR" -X POST "$BASE_URL/api/tickets" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "   ",
     "description": "Description",
     "priority": "HIGH",
     "assignee": "support-user"
@@ -82,12 +209,12 @@ curl -s -X POST "$BASE_URL/api/tickets" \
 
 ## 2. List Tickets
 
-**GET** `/api/tickets`
+**GET** `/api/tickets` — requires authentication (ADMIN or USER).
 
 ### All tickets
 
 ```bash
-curl -s "$BASE_URL/api/tickets"
+curl -s -b "$COOKIE_JAR" "$BASE_URL/api/tickets"
 ```
 
 **Expected:** `200 OK` — JSON array of ticket summaries
@@ -95,7 +222,7 @@ curl -s "$BASE_URL/api/tickets"
 ### Filter by status
 
 ```bash
-curl -s "$BASE_URL/api/tickets?status=OPEN"
+curl -s -b "$COOKIE_JAR" "$BASE_URL/api/tickets?status=OPEN"
 ```
 
 **Status values:** `OPEN`, `IN_PROGRESS`, `RESOLVED`, `CLOSED`, `CANCELLED`
@@ -103,19 +230,19 @@ curl -s "$BASE_URL/api/tickets?status=OPEN"
 ### Search by keyword (title or description, case-insensitive)
 
 ```bash
-curl -s "$BASE_URL/api/tickets?search=login"
+curl -s -b "$COOKIE_JAR" "$BASE_URL/api/tickets?search=login"
 ```
 
 ### Combined search + status filter
 
 ```bash
-curl -s "$BASE_URL/api/tickets?search=login&status=OPEN"
+curl -s -b "$COOKIE_JAR" "$BASE_URL/api/tickets?search=login&status=OPEN"
 ```
 
 ### Invalid status filter
 
 ```bash
-curl -s "$BASE_URL/api/tickets?status=INVALID"
+curl -s -b "$COOKIE_JAR" "$BASE_URL/api/tickets?status=INVALID"
 ```
 
 **Expected:** `400 Bad Request`, `error: "VALIDATION_ERROR"`
@@ -127,7 +254,7 @@ curl -s "$BASE_URL/api/tickets?status=INVALID"
 **GET** `/api/tickets/{id}` — returns ticket details including comments.
 
 ```bash
-curl -s "$BASE_URL/api/tickets/$TICKET_ID"
+curl -s -b "$COOKIE_JAR" "$BASE_URL/api/tickets/$TICKET_ID"
 ```
 
 **Expected:** `200 OK`
@@ -135,7 +262,7 @@ curl -s "$BASE_URL/api/tickets/$TICKET_ID"
 ### Ticket not found
 
 ```bash
-curl -s "$BASE_URL/api/tickets/999"
+curl -s -b "$COOKIE_JAR" "$BASE_URL/api/tickets/999"
 ```
 
 **Expected:** `404 Not Found`, `error: "NOT_FOUND"`
@@ -144,12 +271,12 @@ curl -s "$BASE_URL/api/tickets/999"
 
 ## 4. Update Ticket
 
-**PUT** `/api/tickets/{id}` — updates `title`, `description`, `priority`, `assignee` only.
+**PUT** `/api/tickets/{id}` — updates `title`, `description`, `priority`, `assignee` only. Requires authentication (ADMIN or USER).
 
 **Do not** include `status` in the body; use PATCH `/status` instead.
 
 ```bash
-curl -s -X PUT "$BASE_URL/api/tickets/$TICKET_ID" \
+curl -s -b "$COOKIE_JAR" -X PUT "$BASE_URL/api/tickets/$TICKET_ID" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Updated title",
@@ -164,7 +291,7 @@ curl -s -X PUT "$BASE_URL/api/tickets/$TICKET_ID" \
 ### Rejected: status field in PUT body
 
 ```bash
-curl -s -X PUT "$BASE_URL/api/tickets/$TICKET_ID" \
+curl -s -b "$COOKIE_JAR" -X PUT "$BASE_URL/api/tickets/$TICKET_ID" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Updated title",
@@ -180,7 +307,7 @@ curl -s -X PUT "$BASE_URL/api/tickets/$TICKET_ID" \
 ### Update non-existent ticket
 
 ```bash
-curl -s -X PUT "$BASE_URL/api/tickets/999" \
+curl -s -b "$COOKIE_JAR" -X PUT "$BASE_URL/api/tickets/999" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Title",
@@ -196,12 +323,12 @@ curl -s -X PUT "$BASE_URL/api/tickets/999" \
 
 ## 5. Change Ticket Status
 
-**PATCH** `/api/tickets/{id}/status` — state machine transition.
+**PATCH** `/api/tickets/{id}/status` — state machine transition. Requires authentication.
 
 ### OPEN → IN_PROGRESS
 
 ```bash
-curl -s -X PATCH "$BASE_URL/api/tickets/$TICKET_ID/status" \
+curl -s -b "$COOKIE_JAR" -X PATCH "$BASE_URL/api/tickets/$TICKET_ID/status" \
   -H "Content-Type: application/json" \
   -d '{"status": "IN_PROGRESS"}'
 ```
@@ -221,7 +348,7 @@ curl -s -X PATCH "$BASE_URL/api/tickets/$TICKET_ID/status" \
 ### IN_PROGRESS → RESOLVED
 
 ```bash
-curl -s -X PATCH "$BASE_URL/api/tickets/$TICKET_ID/status" \
+curl -s -b "$COOKIE_JAR" -X PATCH "$BASE_URL/api/tickets/$TICKET_ID/status" \
   -H "Content-Type: application/json" \
   -d '{"status": "RESOLVED"}'
 ```
@@ -229,7 +356,7 @@ curl -s -X PATCH "$BASE_URL/api/tickets/$TICKET_ID/status" \
 ### RESOLVED → CLOSED
 
 ```bash
-curl -s -X PATCH "$BASE_URL/api/tickets/$TICKET_ID/status" \
+curl -s -b "$COOKIE_JAR" -X PATCH "$BASE_URL/api/tickets/$TICKET_ID/status" \
   -H "Content-Type: application/json" \
   -d '{"status": "CLOSED"}'
 ```
@@ -237,7 +364,7 @@ curl -s -X PATCH "$BASE_URL/api/tickets/$TICKET_ID/status" \
 ### OPEN → CANCELLED
 
 ```bash
-curl -s -X PATCH "$BASE_URL/api/tickets/$TICKET_ID/status" \
+curl -s -b "$COOKIE_JAR" -X PATCH "$BASE_URL/api/tickets/$TICKET_ID/status" \
   -H "Content-Type: application/json" \
   -d '{"status": "CANCELLED"}'
 ```
@@ -245,7 +372,7 @@ curl -s -X PATCH "$BASE_URL/api/tickets/$TICKET_ID/status" \
 ### Invalid transition (e.g. CLOSED → OPEN)
 
 ```bash
-curl -s -X PATCH "$BASE_URL/api/tickets/$TICKET_ID/status" \
+curl -s -b "$COOKIE_JAR" -X PATCH "$BASE_URL/api/tickets/$TICKET_ID/status" \
   -H "Content-Type: application/json" \
   -d '{"status": "OPEN"}'
 ```
@@ -256,10 +383,10 @@ curl -s -X PATCH "$BASE_URL/api/tickets/$TICKET_ID/status" \
 
 ## 6. Add Comment
 
-**POST** `/api/tickets/{id}/comments`
+**POST** `/api/tickets/{id}/comments` — requires authentication.
 
 ```bash
-curl -s -X POST "$BASE_URL/api/tickets/$TICKET_ID/comments" \
+curl -s -b "$COOKIE_JAR" -X POST "$BASE_URL/api/tickets/$TICKET_ID/comments" \
   -H "Content-Type: application/json" \
   -d '{"text": "Investigating the issue."}'
 ```
@@ -269,7 +396,7 @@ curl -s -X POST "$BASE_URL/api/tickets/$TICKET_ID/comments" \
 ### Comment on non-existent ticket
 
 ```bash
-curl -s -X POST "$BASE_URL/api/tickets/999/comments" \
+curl -s -b "$COOKIE_JAR" -X POST "$BASE_URL/api/tickets/999/comments" \
   -H "Content-Type: application/json" \
   -d '{"text": "Investigating the issue."}'
 ```
@@ -279,9 +406,19 @@ curl -s -X POST "$BASE_URL/api/tickets/999/comments" \
 ### Blank comment text
 
 ```bash
-curl -s -X POST "$BASE_URL/api/tickets/$TICKET_ID/comments" \
+curl -s -b "$COOKIE_JAR" -X POST "$BASE_URL/api/tickets/$TICKET_ID/comments" \
   -H "Content-Type: application/json" \
   -d '{"text": ""}'
+```
+
+**Expected:** `400 Bad Request`, `error: "VALIDATION_ERROR"`
+
+### Whitespace-only comment text
+
+```bash
+curl -s -b "$COOKIE_JAR" -X POST "$BASE_URL/api/tickets/$TICKET_ID/comments" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "   "}'
 ```
 
 **Expected:** `400 Bad Request`, `error: "VALIDATION_ERROR"`
@@ -290,13 +427,20 @@ curl -s -X POST "$BASE_URL/api/tickets/$TICKET_ID/comments" \
 
 ## Full Lifecycle Example
 
-Run these in order to exercise create → read → update → comment → status change → final read:
+Run these in order to exercise login → create → read → update → comment → status change → final read:
 
 ```bash
 export BASE_URL=http://localhost:8080
+export COOKIE_JAR=/tmp/support-ticket-cookies.txt
+rm -f "$COOKIE_JAR"
+
+# 0. Login as ADMIN
+curl -s -c "$COOKIE_JAR" -X POST "$BASE_URL/api/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "admin", "password": "admin123"}'
 
 # 1. Create
-CREATE_RESPONSE=$(curl -s -X POST "$BASE_URL/api/tickets" \
+CREATE_RESPONSE=$(curl -s -b "$COOKIE_JAR" -c "$COOKIE_JAR" -X POST "$BASE_URL/api/tickets" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Lifecycle ticket",
@@ -311,10 +455,10 @@ export TICKET_ID=$(echo "$CREATE_RESPONSE" | jq -r '.id')
 echo "TICKET_ID=$TICKET_ID"
 
 # 3. Get details
-curl -s "$BASE_URL/api/tickets/$TICKET_ID"
+curl -s -b "$COOKIE_JAR" "$BASE_URL/api/tickets/$TICKET_ID"
 
 # 4. Update
-curl -s -X PUT "$BASE_URL/api/tickets/$TICKET_ID" \
+curl -s -b "$COOKIE_JAR" -X PUT "$BASE_URL/api/tickets/$TICKET_ID" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Updated lifecycle ticket",
@@ -324,17 +468,20 @@ curl -s -X PUT "$BASE_URL/api/tickets/$TICKET_ID" \
   }'
 
 # 5. Add comment
-curl -s -X POST "$BASE_URL/api/tickets/$TICKET_ID/comments" \
+curl -s -b "$COOKIE_JAR" -X POST "$BASE_URL/api/tickets/$TICKET_ID/comments" \
   -H "Content-Type: application/json" \
   -d '{"text": "Working on it."}'
 
 # 6. Transition OPEN → IN_PROGRESS
-curl -s -X PATCH "$BASE_URL/api/tickets/$TICKET_ID/status" \
+curl -s -b "$COOKIE_JAR" -X PATCH "$BASE_URL/api/tickets/$TICKET_ID/status" \
   -H "Content-Type: application/json" \
   -d '{"status": "IN_PROGRESS"}'
 
 # 7. Final read
-curl -s "$BASE_URL/api/tickets/$TICKET_ID"
+curl -s -b "$COOKIE_JAR" "$BASE_URL/api/tickets/$TICKET_ID"
+
+# 8. Logout
+curl -s -b "$COOKIE_JAR" -c "$COOKIE_JAR" -X POST "$BASE_URL/api/auth/logout"
 ```
 
 ---
@@ -355,6 +502,8 @@ All API errors use a consistent JSON shape:
 
 | `error` value | Typical HTTP status |
 |---------------|---------------------|
+| `AUTHENTICATION_ERROR` | 401 |
+| `FORBIDDEN` | 403 |
 | `VALIDATION_ERROR` | 400 |
 | `INVALID_STATE_TRANSITION` | 400 |
 | `NOT_FOUND` | 404 |
@@ -370,10 +519,12 @@ All API errors use a consistent JSON shape:
 | `assignee` | 100 |
 | comment `text` | 2000 |
 
+All listed fields are mandatory and must not be blank or whitespace-only.
+
 ---
 
 ## Related Documentation
 
 - [spec/api-contract.md](../spec/api-contract.md) — authoritative API specification
 - [spec/state-machine.md](../spec/state-machine.md) — status transition rules
-- [README.md](../README.md) — setup and run instructions
+- [README.md](../README.md) — setup, demo authentication, and run instructions

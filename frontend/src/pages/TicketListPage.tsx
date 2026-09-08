@@ -1,19 +1,32 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ErrorMessage } from '../components/ErrorMessage';
 import { LoadingState } from '../components/LoadingState';
 import { TicketTable } from '../components/TicketTable';
+import { useAuth } from '../context/AuthContext';
 import { fetchTickets } from '../services/ticketService';
 import type { Status, TicketSummary } from '../types/ticket';
 import { STATUSES } from '../types/ticket';
 import { getErrorMessage } from '../utils/api';
 
 export function TicketListPage() {
+  const { isAdmin } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [tickets, setTickets] = useState<TicketSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [accessDeniedMessage, setAccessDeniedMessage] = useState('');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<Status | ''>('');
+
+  useEffect(() => {
+    const state = location.state as { accessDenied?: boolean } | null;
+    if (state?.accessDenied) {
+      setAccessDeniedMessage('You do not have permission to create tickets.');
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [location.pathname, location.state, navigate]);
 
   const loadTickets = useCallback(async () => {
     setLoading(true);
@@ -54,8 +67,14 @@ export function TicketListPage() {
             <option key={status} value={status}>{status}</option>
           ))}
         </select>
-        <Link className="btn btn-primary" to="/tickets/new">Create Ticket</Link>
+        {isAdmin && (
+          <Link className="btn btn-primary" to="/tickets/new">Create Ticket</Link>
+        )}
       </div>
+
+      {accessDeniedMessage && (
+        <div className="error-banner" role="alert">{accessDeniedMessage}</div>
+      )}
 
       <ErrorMessage message={error} />
 

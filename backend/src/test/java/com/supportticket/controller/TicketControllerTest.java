@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -29,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@WithMockUser(roles = "ADMIN")
 class TicketControllerTest {
 
     @Autowired
@@ -85,6 +87,96 @@ class TicketControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"))
                 .andExpect(jsonPath("$.message").exists());
+    }
+
+    @Test
+    void createTicketRejectsWhitespaceOnlyTitle() throws Exception {
+        String body = """
+                {
+                  "title": "   ",
+                  "description": "Description",
+                  "priority": "HIGH",
+                  "assignee": "support-user"
+                }
+                """;
+
+        mockMvc.perform(post("/api/tickets")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"));
+    }
+
+    @Test
+    void createTicketRejectsWhitespaceOnlyDescription() throws Exception {
+        String body = """
+                {
+                  "title": "Title",
+                  "description": "   ",
+                  "priority": "HIGH",
+                  "assignee": "support-user"
+                }
+                """;
+
+        mockMvc.perform(post("/api/tickets")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"));
+    }
+
+    @Test
+    void createTicketRejectsWhitespaceOnlyAssignee() throws Exception {
+        String body = """
+                {
+                  "title": "Title",
+                  "description": "Description",
+                  "priority": "HIGH",
+                  "assignee": "   "
+                }
+                """;
+
+        mockMvc.perform(post("/api/tickets")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"));
+    }
+
+    @Test
+    void createTicketRejectsMissingDescription() throws Exception {
+        String body = """
+                {
+                  "title": "Title",
+                  "description": "",
+                  "priority": "HIGH",
+                  "assignee": "support-user"
+                }
+                """;
+
+        mockMvc.perform(post("/api/tickets")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"));
+    }
+
+    @Test
+    void createTicketRejectsMissingAssignee() throws Exception {
+        String body = """
+                {
+                  "title": "Title",
+                  "description": "Description",
+                  "priority": "HIGH",
+                  "assignee": ""
+                }
+                """;
+
+        mockMvc.perform(post("/api/tickets")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"));
     }
 
     @Test
@@ -194,6 +286,37 @@ class TicketControllerTest {
         mockMvc.perform(get("/api/tickets/{id}", ticketId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("OPEN"));
+    }
+
+    @Test
+    void updateTicketRejectsWhitespaceOnlyTitle() throws Exception {
+        long ticketId = createSampleTicket("Title", "Description", Priority.HIGH, Status.OPEN);
+
+        String body = """
+                {
+                  "title": "   ",
+                  "description": "Description",
+                  "priority": "HIGH",
+                  "assignee": "support-user"
+                }
+                """;
+
+        mockMvc.perform(put("/api/tickets/{id}", ticketId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"));
+    }
+
+    @Test
+    void addCommentRejectsWhitespaceOnlyText() throws Exception {
+        long ticketId = createSampleTicket("Title", "Description", Priority.HIGH, Status.OPEN);
+
+        mockMvc.perform(post("/api/tickets/{id}/comments", ticketId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"text\": \"   \"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"));
     }
 
     @Test

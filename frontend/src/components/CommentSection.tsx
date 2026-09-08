@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Ticket } from '../types/ticket';
 import { addComment, fetchTicket } from '../services/ticketService';
 import { getErrorMessage } from '../utils/api';
+import { validateCommentText } from '../utils/formValidation';
 
 interface CommentSectionProps {
   ticket: Ticket;
@@ -14,19 +15,28 @@ function formatDate(value: string): string {
 
 export function CommentSection({ ticket, onUpdated }: CommentSectionProps) {
   const [text, setText] = useState('');
+  const [fieldError, setFieldError] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError('');
+
+    const validationError = validateCommentText(text);
+    setFieldError(validationError ?? '');
+    if (validationError) {
+      return;
+    }
+
     setSubmitting(true);
 
     try {
-      await addComment(ticket.id, text);
+      await addComment(ticket.id, text.trim());
       const latest = await fetchTicket(ticket.id);
       onUpdated(latest);
       setText('');
+      setFieldError('');
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -51,17 +61,30 @@ export function CommentSection({ ticket, onUpdated }: CommentSectionProps) {
         </ul>
       )}
 
-      <form onSubmit={handleSubmit} style={{ marginTop: '1rem' }}>
+      <form onSubmit={handleSubmit} style={{ marginTop: '1rem' }} noValidate>
         {error && <div className="error-banner" role="alert">{error}</div>}
         <div className="form-group">
-          <label htmlFor="comment-text">Add comment</label>
+          <label htmlFor="comment-text">
+            Comment
+            <span className="required-mark" aria-hidden="true"> *</span>
+          </label>
           <textarea
             id="comment-text"
             value={text}
             maxLength={2000}
-            required
-            onChange={(e) => setText(e.target.value)}
+            aria-invalid={fieldError ? 'true' : undefined}
+            aria-describedby={fieldError ? 'comment-text-error' : undefined}
+            className={fieldError ? 'field-invalid' : undefined}
+            onChange={(e) => {
+              setText(e.target.value);
+              if (fieldError) {
+                setFieldError('');
+              }
+            }}
           />
+          {fieldError && (
+            <p id="comment-text-error" className="field-error" role="alert">{fieldError}</p>
+          )}
         </div>
         <button className="btn btn-primary" type="submit" disabled={submitting}>
           {submitting ? 'Submitting...' : 'Add Comment'}

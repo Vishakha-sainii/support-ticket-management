@@ -71,7 +71,7 @@ npm install
 npm run dev
 ```
 
-UI runs at **http://localhost:5173** (proxies `/api` to the backend).
+UI runs at **http://localhost:5173** (proxies `/api` to the backend). You will be prompted to sign in on first visit.
 
 ## Demo Authentication (Local Development Only)
 
@@ -97,10 +97,10 @@ Demo users are configured in `application.yml` (not embedded in business logic).
 ## Running Tests
 
 ```bash
-# Backend (57 tests)
+# Backend (76 tests)
 cd backend && ./gradlew test
 
-# Frontend (13 tests)
+# Frontend (46 tests)
 cd frontend && npm test
 ```
 

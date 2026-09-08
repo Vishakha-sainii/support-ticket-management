@@ -14,12 +14,12 @@
 | REQ-008 | AC-010 | TASK-002, TASK-021 | Flyway migration, JPA entities, PostgreSQL config | `TicketRepositoryTest`, `TicketApiIntegrationTest` | Complete |
 | REQ-009 | AC-002, AC-011–AC-018, AC-023 | TASK-012–014 | `TicketStateMachine`, `GlobalExceptionHandler`, validation DTOs | `TicketStateMachineTest`, `TicketControllerTest`, `TicketServiceTest` | Complete |
 | REQ-010 | AC-019 | TASK-015–019 | `utils/api.ts`, `ErrorMessage`, form error handling | `api.test.ts`, `ErrorMessage.test.tsx`, `TicketForm.test.tsx` | Complete |
-| REQ-011 | AC-024, AC-025, AC-026, AC-048 | TASK-029, TASK-030, TASK-032, TASK-038, TASK-041 | `SecurityConfig`, `AuthController`, `LoginPage`, `AuthContext` | `AuthControllerTest`, `AuthIntegrationTest`, `LoginPage.test.tsx` | Pending |
-| REQ-012 | AC-027–AC-035 | TASK-031, TASK-033, TASK-038, TASK-041 | `SecurityConfig`, `@PreAuthorize` on `TicketController`, role-aware UI | `AuthorizationTest`, `TicketControllerSecurityTest` | Pending |
-| REQ-013 | AC-036–AC-041 | TASK-034, TASK-039 | `TicketForm`, `CommentSection`, Jakarta `@NotBlank` on DTOs | `TicketForm.test.tsx`, `CommentSection.test.tsx`, `TicketControllerTest` | Pending |
-| REQ-014 | AC-042 | TASK-035, TASK-040 | `PriorityBadge` component, priority CSS classes | `PriorityBadge.test.tsx`, `TicketTable.test.tsx` | Pending |
-| REQ-015 | AC-043 | TASK-036, TASK-040 | `StatusBadge` component, status CSS classes | `StatusBadge.test.tsx`, `TicketTable.test.tsx` | Pending |
-| REQ-016 | AC-044–AC-047 | TASK-037, TASK-040 | `index.css` layout, responsive breakpoints | Layout/responsive smoke tests | Pending |
+| REQ-011 | AC-024, AC-025, AC-026, AC-048 | TASK-029, TASK-030, TASK-032, TASK-038, TASK-041 | `SecurityConfig`, `AuthController`, `LoginPage`, `AuthContext`, `ProtectedLayout` | `AuthControllerTest`, `LoginPage.test.tsx`, `ProtectedLayout.test.tsx` | Complete |
+| REQ-012 | AC-027–AC-035 | TASK-031, TASK-033, TASK-038, TASK-041 | `SecurityConfig`, `AdminRoute`, role-aware `TicketListPage` | `AuthControllerTest`, `AdminRoute.test.tsx`, `TicketListPage.test.tsx` | Complete |
+| REQ-013 | AC-036–AC-041 | TASK-034, TASK-039 | `TicketForm`, `CommentSection`, `formValidation.ts`, Jakarta `@NotBlank` on DTOs | `TicketForm.test.tsx`, `CommentSection.test.tsx`, `formValidation.test.ts`, `TicketControllerTest` | Complete |
+| REQ-014 | AC-042 | TASK-035, TASK-040 | `PriorityBadge` component, priority CSS classes | `PriorityBadge.test.tsx`, `TicketTable.test.tsx` | Complete |
+| REQ-015 | AC-043 | TASK-036, TASK-040 | `StatusBadge` component, status CSS classes | `StatusBadge.test.tsx`, `TicketTable.test.tsx` | Complete |
+| REQ-016 | AC-044–AC-047 | TASK-037, TASK-040 | `index.css` layout, responsive breakpoints, `table-container` | `ProtectedLayout.layout.test.tsx`, `TicketTable.test.tsx` | Complete |
 
 ## Non-Functional Requirements
 
@@ -27,9 +27,9 @@
 | ----------- | ------------------- | ---- | -------------- | ----- | ------ |
 | NFR-001 | — | TASK-001, TASK-025 | Layered Spring Boot structure | `SupportTicketApplicationTests` | Complete |
 | NFR-002 | — | TASK-001, TASK-025 | Controller/Service/Repository separation | Code review (`docs/code-quality-review.md`) | Complete |
-| NFR-003 | — | TASK-020–022 | Unit + integration test suites | 57 backend + 13 frontend tests | Complete |
+| NFR-003 | — | TASK-020–023, TASK-038–040 | Unit + integration + auth/validation/UI test suites | 76 backend + 46 frontend tests | Complete |
 | NFR-004 | AC-002, AC-019, AC-023 | TASK-014, TASK-021 | `GlobalExceptionHandler`, `ErrorResponse` | `TicketControllerTest`, `api.test.ts` | Complete |
-| NFR-005 | AC-020 | TASK-002, TASK-026, TASK-029, TASK-041 | Env-based DB config, `.env.example`, demo-user config in `application.yml` | `docs/security-review.md` | Partial (demo auth pending) |
+| NFR-005 | AC-020 | TASK-002, TASK-026, TASK-029, TASK-041 | Env-based DB config, `.env.example`, demo-user config in `application.yml`, README demo auth section | `docs/security-review.md`, `AuthControllerTest` | Complete |
 | NFR-006 | — | TASK-001, TASK-025 | No extra infrastructure | Architecture review | Complete |
 
 ## Business Rules
@@ -47,17 +47,17 @@
 
 | Requirement | Acceptance Criteria | Task | Implementation | Tests | Status |
 | ----------- | ------------------- | ---- | -------------- | ----- | ------ |
-| REQ-011 (auth) | AC-024–AC-026, AC-048 | TASK-029, TASK-030, TASK-032 | `AuthController`, `SecurityConfig`, `LoginPage` | `AuthControllerTest`, `LoginPage.test.tsx` | Pending |
-| REQ-012 (RBAC) | AC-027–AC-035 | TASK-031, TASK-033 | `SecurityConfig`, role-based UI guards | `AuthorizationTest`, role UI tests | Pending |
-| Demo users | AC-024, AC-025 | TASK-029, TASK-041 | `application.yml` `app.security.demo-users` | Login integration tests | Pending |
+| REQ-011 (auth) | AC-024–AC-026, AC-048 | TASK-029, TASK-030, TASK-032, TASK-038 | `AuthController`, `LoginPage`, `AuthContext` | `AuthControllerTest`, `LoginPage.test.tsx` | Complete |
+| REQ-012 (RBAC) | AC-027–AC-035 | TASK-031, TASK-033, TASK-038 | `AdminRoute`, `TicketListPage` | `AdminRoute.test.tsx`, `TicketListPage.test.tsx` | Complete |
+| Demo users | AC-024, AC-025 | TASK-029, TASK-041 | `application.yml` `app.security.demo-users` | `AuthControllerTest` | Complete |
 
 ## UI Enhancements
 
 | Requirement | Acceptance Criteria | Task | Implementation | Tests | Status |
 | ----------- | ------------------- | ---- | -------------- | ----- | ------ |
-| REQ-013 (validation UX) | AC-036–AC-041 | TASK-034, TASK-039 | `TicketForm`, `CommentSection` | Form validation tests | Pending |
-| REQ-014 (priority badges) | AC-042 | TASK-035, TASK-040 | `PriorityBadge` | Badge rendering tests | Pending |
-| REQ-015 (status badges) | AC-043 | TASK-036, TASK-040 | `StatusBadge` | Badge rendering tests | Pending |
-| REQ-016 (responsive layout) | AC-044–AC-047 | TASK-037, TASK-040 | `index.css` full-width layout | Layout smoke tests | Pending |
+| REQ-013 (validation UX) | AC-036–AC-041 | TASK-034, TASK-039 | `TicketForm`, `CommentSection`, `formValidation.ts` | `TicketForm.test.tsx`, `CommentSection.test.tsx`, `formValidation.test.ts` | Complete |
+| REQ-014 (priority badges) | AC-042 | TASK-035, TASK-040 | `PriorityBadge` | `PriorityBadge.test.tsx` | Complete |
+| REQ-015 (status badges) | AC-043 | TASK-036, TASK-040 | `StatusBadge` | `StatusBadge.test.tsx` | Complete |
+| REQ-016 (responsive layout) | AC-044–AC-047 | TASK-037, TASK-040 | `index.css`, `table-container` | `ProtectedLayout.layout.test.tsx` | Complete |
 
-Last updated: 2026-09-08 (TASK-041 spec update — Phase 10 pending)
+Last updated: 2026-09-08 (Phase 10 complete — TASK-041)
