@@ -30,12 +30,15 @@ The backend is the authoritative source for business rules and state-machine enf
 * Frontend validation/error display
 * Ticket lifecycle/state-machine enforcement
 * Automated testing
+* Authentication and role-based access control
+* Mandatory field validation (frontend and backend)
+* Priority and status visual styling
+* Full-screen responsive UI layout
 
 ### Out of Scope
 
 Unless explicitly required later:
 
-* Authentication/authorization
 * Email notifications
 * File attachments
 * Real-time notifications
@@ -53,7 +56,7 @@ Unless explicitly required later:
 
 ## REQ-001 — Create Ticket
 
-The system shall allow a user to create a support ticket.
+The system shall allow an authenticated **ADMIN** user to create a support ticket.
 
 A ticket shall contain at minimum:
 
@@ -210,6 +213,174 @@ Technical/internal exception details shall not be exposed unnecessarily to users
 
 ---
 
+## REQ-011 — Authentication
+
+The system shall provide a simple login mechanism so that users can authenticate through the UI.
+
+The system shall support two roles for local evaluation:
+
+* `ADMIN`
+* `USER`
+
+The system shall provide development/demo users configured through application configuration (not embedded in business logic):
+
+| Username | Password | Role |
+| -------- | -------- | ---- |
+| admin | admin123 | ADMIN |
+| user | user123 | USER |
+
+Requirements:
+
+* Provide a login screen.
+* Successful login shall establish the authenticated user's identity and role.
+* Invalid credentials shall be rejected with a meaningful authentication error.
+* The frontend shall know the authenticated user's role.
+* The authenticated role shall be enforced by the backend.
+* Frontend role checks are usability features only and shall not be the sole security mechanism.
+* Demo credentials shall be documented in `README.md` for local evaluation only, with a clear statement that they are development/demo credentials and must not be used in production.
+
+---
+
+## REQ-012 — Role-Based Access Control
+
+The system shall enforce role-based authorization on the backend.
+
+### ADMIN permissions
+
+* View ticket list
+* View ticket details
+* Create tickets
+* Update tickets
+* View all tickets
+
+### USER permissions
+
+* View ticket list
+* View ticket details
+* Update tickets
+* Cannot create tickets
+
+### Authorization rules
+
+| Operation | ADMIN | USER |
+| --------- | ----- | ---- |
+| `GET /api/tickets` | allowed | allowed |
+| `GET /api/tickets/{id}` | allowed | allowed |
+| `POST /api/tickets` | allowed | **forbidden (403)** |
+| `PUT /api/tickets/{id}` | allowed | allowed |
+
+A `USER` attempting `POST /api/tickets` shall receive `HTTP 403 Forbidden` with the application's consistent error response format.
+
+Other authenticated ticket operations (status transitions, comments) remain available to both roles unless explicitly restricted in a future requirement.
+
+Unauthenticated access to ticket APIs shall be rejected.
+
+---
+
+## REQ-013 — Mandatory Field Validation
+
+The following fields are mandatory.
+
+### Ticket creation
+
+* title
+* description
+* priority
+* assignee
+
+### Ticket update
+
+* title
+* description
+* priority
+* assignee
+
+### Comment creation
+
+* comment text
+
+### Frontend requirements
+
+* Display an asterisk (`*`) next to every mandatory field label.
+* Prevent submission when mandatory fields are blank.
+* Reject whitespace-only values.
+* Display meaningful validation messages.
+* Visually indicate invalid fields where appropriate.
+* Validation shall be consistent across create, update, and comment forms.
+
+### Backend requirements
+
+* Mandatory validation shall be enforced by the backend.
+* Never rely only on frontend/HTML validation.
+* Blank and whitespace-only values shall be rejected.
+* Use appropriate Jakarta Bean Validation where applicable.
+* Return the existing consistent validation error structure.
+* Do not expose stack traces, SQL details, or internal implementation details.
+
+---
+
+## REQ-014 — Priority Visual Styling
+
+Priority values (`LOW`, `MEDIUM`, `HIGH`, `CRITICAL`) shall be displayed as visually distinct badges/chips throughout the application.
+
+Requirements:
+
+* Each priority shall have clearly distinguishable visual styling.
+* Styling shall be consistent throughout the application.
+* Styling should communicate severity/importance.
+* Text must remain readable and accessible.
+* Do not rely on color alone where that would hurt accessibility.
+
+Suggested semantic treatment:
+
+* `LOW` → low/neutral styling
+* `MEDIUM` → informational styling
+* `HIGH` → warning styling
+* `CRITICAL` → danger styling
+
+---
+
+## REQ-015 — Status Visual Styling
+
+Status values (`OPEN`, `IN_PROGRESS`, `RESOLVED`, `CLOSED`, `CANCELLED`) shall be displayed as visually distinct badges/chips throughout the application.
+
+Requirements:
+
+* Each status shall have clearly distinguishable visual styling.
+* Styling shall be consistent throughout the application.
+* Text must remain readable and accessible.
+* Do not rely on color alone where that would hurt accessibility.
+
+Suggested semantic treatment:
+
+* `OPEN` → informational styling
+* `IN_PROGRESS` → active/in-progress styling
+* `RESOLVED` → success styling
+* `CLOSED` → neutral/completed styling
+* `CANCELLED` → danger/cancelled styling
+
+The existing state machine and valid transitions shall not change.
+
+---
+
+## REQ-016 — Full-Screen Responsive UI
+
+The application shall use the available viewport width and provide a full-screen application layout.
+
+Requirements:
+
+* Use available horizontal space.
+* Provide a full-width application layout.
+* Support responsive desktop, tablet, and mobile layouts.
+* The ticket table/list shall use available horizontal space.
+* Avoid unnecessary fixed-width containers.
+* Maintain reasonable content spacing and readability.
+* Preserve existing functionality.
+* Avoid unnecessary horizontal overflow.
+* Forms shall remain usable on smaller screens.
+
+---
+
 # 4. Non-Functional Requirements
 
 ## NFR-001 — Maintainability
@@ -234,7 +405,9 @@ API errors shall use a consistent response structure.
 
 ## NFR-005 — Security
 
-No secrets, passwords, tokens, or environment-specific credentials shall be committed to source control.
+No production secrets, passwords, tokens, or environment-specific credentials shall be committed to source control.
+
+Development/demo authentication credentials may be configured through application configuration and documented in `README.md` for local evaluation only, with an explicit warning that they must not be used in production.
 
 ## NFR-006 — Simplicity
 
@@ -291,6 +464,11 @@ The implementation must consider:
 * malformed request payload
 * field values exceeding maximum length
 * `status` field supplied in `PUT /api/tickets/{id}` request body
+* unauthenticated API access
+* invalid login credentials
+* `USER` attempting ticket creation (`POST /api/tickets`)
+* whitespace-only mandatory field values
+* direct navigation to create-ticket page by `USER`
 
 ---
 

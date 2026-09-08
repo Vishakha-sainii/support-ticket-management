@@ -139,3 +139,99 @@ Tests should:
 * remain maintainable
 * not weaken production requirements to make tests pass
 
+---
+
+# 11. Authentication Tests
+
+Test:
+
+* valid ADMIN login (`admin` / `admin123`)
+* valid USER login (`user` / `user123`)
+* invalid credentials rejected with meaningful `401` error
+* unauthenticated access to ticket APIs returns `401`
+* session established on successful login
+* `GET /api/auth/me` returns current user and role
+* logout invalidates session
+
+---
+
+# 12. Authorization Tests
+
+Test:
+
+* ADMIN allowed operations:
+  * `GET /api/tickets`
+  * `GET /api/tickets/{id}`
+  * `POST /api/tickets`
+  * `PUT /api/tickets/{id}`
+* USER allowed operations:
+  * `GET /api/tickets`
+  * `GET /api/tickets/{id}`
+  * `PUT /api/tickets/{id}`
+* USER forbidden operation:
+  * `POST /api/tickets` returns `HTTP 403 Forbidden` with consistent error format
+* backend authorization verified independently of frontend (use `@WithMockUser`, session-based API tests, or equivalent)
+
+Existing state-machine tests must remain intact.
+
+---
+
+# 13. Mandatory Field Validation Tests
+
+### Backend
+
+Test:
+
+* missing title on create
+* missing description on create
+* missing priority on create
+* missing assignee on create
+* missing title on update
+* missing description on update
+* missing priority on update
+* missing assignee on update
+* missing comment text
+* whitespace-only title
+* whitespace-only description
+* whitespace-only assignee
+* whitespace-only comment text
+
+### Frontend
+
+Test:
+
+* required field asterisk (`*`) displayed on mandatory labels
+* blank mandatory fields prevent submission
+* whitespace-only values rejected with meaningful messages
+* invalid fields visually indicated
+* consistent validation across create, update, and comment forms
+
+---
+
+# 14. UI Enhancement Tests
+
+Test where practical:
+
+* role-based Create Ticket visibility (ADMIN visible, USER hidden)
+* priority badge rendering for all priority values
+* status badge rendering for all status values
+* full-width layout (no narrow centered constraint)
+* responsive behavior smoke tests (toolbar wrapping, form usability)
+
+---
+
+# 15. Requirement Traceability (Extended)
+
+Example:
+
+```text
+REQ-011 → Authentication tests (AC-024–AC-026, AC-048)
+REQ-012 → Authorization tests (AC-027–AC-035)
+REQ-013 → Mandatory field validation tests (AC-036–AC-041)
+REQ-014 → Priority badge tests (AC-042)
+REQ-015 → Status badge tests (AC-043)
+REQ-016 → Layout/responsive tests (AC-044–AC-047)
+```
+
+Existing traceability for REQ-001–REQ-010, BR-001–BR-006, and NFR-001–NFR-006 shall be preserved.
+

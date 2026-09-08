@@ -7,8 +7,9 @@ export function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1><Link to="/">Support Tickets</Link></h1>
-        <Link to="/tickets/new">Create Ticket</Link>
+        <h1>
+          <Link to="/" className="app-title">Ticket Management System</Link>
+        </h1>
       </header>
 
       <Routes>

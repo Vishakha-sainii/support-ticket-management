@@ -20,13 +20,14 @@
   font-size: 1.5rem;
 }
 
-.app-header a {
-  color: #2563eb;
+.app-title {
+  color: #1a1a1a;
+  font-weight: 700;
   text-decoration: none;
 }
 
-.app-header a:hover {
-  text-decoration: underline;
+.app-title:hover {
+  color: #2563eb;
 }
 
 .card {

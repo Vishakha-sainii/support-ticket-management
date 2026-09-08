@@ -11,12 +11,16 @@ A spec-driven support ticket application with a **Spring Boot** REST API, **Post
 - Controlled ticket lifecycle (OPEN → IN_PROGRESS → RESOLVED → CLOSED, with CANCELLED paths)
 - Backend validation and consistent API error responses
 - Frontend error display for API failures
+- Authentication with role-based access control (ADMIN / USER)
+- Mandatory field validation with visual indicators
+- Priority and status badge styling
+- Full-screen responsive layout
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|------------|
-| Backend | Java 21, Spring Boot 3.4, Gradle |
+| Backend | Java 21, Spring Boot 3.4, Gradle, Spring Security |
 | Database | PostgreSQL (Flyway migrations) |
 | Frontend | React 19, TypeScript, Vite |
 | Tests | JUnit 5, Mockito, Vitest, Testing Library |
@@ -69,6 +73,27 @@ npm run dev
 
 UI runs at **http://localhost:5173** (proxies `/api` to the backend).
 
+## Demo Authentication (Local Development Only)
+
+> **Warning:** The credentials below are **development/demo credentials only**. They are intended for local evaluation of this assignment. **Do not use these credentials in production.** Configure proper authentication for any production deployment.
+
+| Role | Username | Password |
+|------|----------|----------|
+| ADMIN | `admin` | `admin123` |
+| USER | `user` | `user123` |
+
+- **ADMIN** can view, create, and update tickets.
+- **USER** can view and update tickets but **cannot create** tickets.
+
+Log in through the UI login screen. The backend enforces authorization — frontend role checks are for usability only.
+
+Demo users are configured in `application.yml` (not embedded in business logic). Passwords may be overridden via environment variables:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DEMO_ADMIN_PASSWORD` | ADMIN demo password | `admin123` |
+| `DEMO_USER_PASSWORD` | USER demo password | `user123` |
+
 ## Running Tests
 
 ```bash
@@ -83,14 +108,21 @@ cd frontend && npm test
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/tickets` | Create ticket (starts OPEN) |
+| POST | `/api/auth/login` | Authenticate (establish session) |
+| GET | `/api/auth/me` | Get current user and role |
+| POST | `/api/auth/logout` | End session |
+| POST | `/api/tickets` | Create ticket (ADMIN only, starts OPEN) |
 | GET | `/api/tickets` | List tickets (`?search=`, `?status=`) |
 | GET | `/api/tickets/{id}` | Get ticket with comments |
 | PUT | `/api/tickets/{id}` | Update title, description, priority, assignee |
 | PATCH | `/api/tickets/{id}/status` | State transition |
 | POST | `/api/tickets/{id}/comments` | Add comment |
 
+All ticket endpoints require authentication.
+
 See [spec/api-contract.md](spec/api-contract.md) for full details.
+
+**cURL examples:** [docs/api-curl-examples.md](docs/api-curl-examples.md)
 
 ## Project Structure
 
@@ -105,6 +137,7 @@ rules/            Engineering conventions
 ## Documentation
 
 - [Implementation tasks](docs/tasks.md)
+- [API cURL examples](docs/api-curl-examples.md)
 - [Traceability matrix](docs/traceability-matrix.md)
 - [Spec vs code review](docs/spec-code-review.md)
 - [Security review](docs/security-review.md)

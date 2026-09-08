@@ -10,6 +10,134 @@ Identifiers (`id`, `ticketId`) are `Long` values.
 
 ---
 
+# Authentication
+
+All ticket endpoints require authentication unless explicitly noted otherwise.
+
+The frontend shall send session cookies with API requests (`credentials: include`).
+
+Public endpoints:
+
+| Method | Endpoint | Description |
+| ------ | -------- | ----------- |
+| POST | `/api/auth/login` | Authenticate and establish session |
+| GET | `/api/health` | Health check (development profile only, if enabled) |
+
+Authenticated endpoints:
+
+| Method | Endpoint | Description |
+| ------ | -------- | ----------- |
+| GET | `/api/auth/me` | Return current authenticated user and role |
+| POST | `/api/auth/logout` | Invalidate session |
+
+---
+
+## Login
+
+### POST `/api/auth/login`
+
+Authenticates a user and establishes an HTTP session.
+
+Request:
+
+```json
+{
+  "username": "admin",
+  "password": "admin123"
+}
+```
+
+Success:
+
+`200 OK`
+
+```json
+{
+  "username": "admin",
+  "role": "ADMIN"
+}
+```
+
+Response includes `Set-Cookie` for session (e.g. `JSESSIONID`).
+
+Invalid credentials:
+
+`401 Unauthorized`
+
+```json
+{
+  "timestamp": "2026-01-01T10:00:00Z",
+  "status": 401,
+  "error": "AUTHENTICATION_ERROR",
+  "message": "Invalid username or password",
+  "path": "/api/auth/login"
+}
+```
+
+---
+
+## Current User
+
+### GET `/api/auth/me`
+
+Returns the authenticated user's identity and role.
+
+Success:
+
+`200 OK`
+
+```json
+{
+  "username": "admin",
+  "role": "ADMIN"
+}
+```
+
+Unauthenticated:
+
+`401 Unauthorized`
+
+---
+
+## Logout
+
+### POST `/api/auth/logout`
+
+Invalidates the current session.
+
+Success:
+
+`204 No Content` or `200 OK`
+
+---
+
+# Authorization
+
+| Endpoint | ADMIN | USER | Unauthenticated |
+| -------- | ----- | ---- | --------------- |
+| `POST /api/tickets` | allowed | **403 Forbidden** | 401 |
+| `GET /api/tickets` | allowed | allowed | 401 |
+| `GET /api/tickets/{id}` | allowed | allowed | 401 |
+| `PUT /api/tickets/{id}` | allowed | allowed | 401 |
+| `PATCH /api/tickets/{id}/status` | allowed | allowed | 401 |
+| `POST /api/tickets/{id}/comments` | allowed | allowed | 401 |
+
+Forbidden example (`USER` attempting `POST /api/tickets`):
+
+`403 Forbidden`
+
+```json
+{
+  "timestamp": "2026-01-01T10:00:00Z",
+  "status": 403,
+  "error": "FORBIDDEN",
+  "message": "You do not have permission to perform this action",
+  "path": "/api/tickets"
+}
+```
+
+---
+
 # Field Constraints
 
 | Field       | Max Length | Notes                |
@@ -28,6 +156,8 @@ Requests exceeding these limits shall be rejected with a `400` validation error.
 ### POST `/api/tickets`
 
 Creates a new ticket.
+
+**Requires `ADMIN` role.**
 
 ### Request
 
@@ -64,6 +194,8 @@ Creates a new ticket.
 ### GET `/api/tickets`
 
 Returns tickets.
+
+**Requires authentication (ADMIN or USER).**
 
 Optional query parameters:
 
@@ -119,6 +251,8 @@ When both `search` and `status` are provided, both filters apply.
 
 Returns a specific ticket including comments.
 
+**Requires authentication (ADMIN or USER).**
+
 Success:
 
 `200 OK`
@@ -154,6 +288,8 @@ Not found:
 ### PUT `/api/tickets/{id}`
 
 Updates editable ticket fields: `title`, `description`, `priority`, `assignee`.
+
+**Requires authentication (ADMIN or USER).**
 
 Request:
 
@@ -195,6 +331,8 @@ Not found:
 # 5. Change Status
 
 ### PATCH `/api/tickets/{id}/status`
+
+**Requires authentication (ADMIN or USER).**
 
 Request:
 
@@ -243,6 +381,8 @@ or another documented 4xx response consistent with the final implementation.
 # 6. Add Comment
 
 ### POST `/api/tickets/{id}/comments`
+
+**Requires authentication (ADMIN or USER).**
 
 Request:
 
@@ -329,7 +469,51 @@ Example:
 
 ---
 
-# 11. API Principles
+# 11. Authentication Error
+
+Example (invalid credentials):
+
+```json
+{
+  "timestamp": "2026-01-01T10:00:00Z",
+  "status": 401,
+  "error": "AUTHENTICATION_ERROR",
+  "message": "Invalid username or password",
+  "path": "/api/auth/login"
+}
+```
+
+Example (unauthenticated access to protected endpoint):
+
+```json
+{
+  "timestamp": "2026-01-01T10:00:00Z",
+  "status": 401,
+  "error": "AUTHENTICATION_ERROR",
+  "message": "Authentication required",
+  "path": "/api/tickets"
+}
+```
+
+---
+
+# 12. Forbidden Error
+
+Example (`USER` attempting `POST /api/tickets`):
+
+```json
+{
+  "timestamp": "2026-01-01T10:00:00Z",
+  "status": 403,
+  "error": "FORBIDDEN",
+  "message": "You do not have permission to perform this action",
+  "path": "/api/tickets"
+}
+```
+
+---
+
+# 13. API Principles
 
 * Use appropriate HTTP methods.
 * Use appropriate HTTP status codes.

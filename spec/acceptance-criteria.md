@@ -231,3 +231,261 @@
 **When** a `PUT /api/tickets/{id}` request includes a `status` field
 **Then** the backend shall reject the request with a `400` validation or business error
 **And** the ticket status shall remain unchanged.
+
+---
+
+## AC-024 — ADMIN Login
+
+**Requirement:** REQ-011
+
+**Given** valid ADMIN credentials
+**When** the user submits the login form
+**Then** authentication shall succeed
+**And** the application shall establish the authenticated ADMIN identity and role.
+
+---
+
+## AC-025 — USER Login
+
+**Requirement:** REQ-011
+
+**Given** valid USER credentials
+**When** the user submits the login form
+**Then** authentication shall succeed
+**And** the application shall establish the authenticated USER identity and role.
+
+---
+
+## AC-026 — Invalid Login
+
+**Requirement:** REQ-011
+
+**Given** invalid credentials
+**When** the user submits the login form
+**Then** authentication shall be rejected
+**And** a meaningful authentication error shall be displayed.
+
+---
+
+## AC-027 — ADMIN View Tickets
+
+**Requirement:** REQ-012
+
+**Given** an authenticated ADMIN
+**When** the user requests the ticket list
+**Then** tickets shall be displayed successfully.
+
+---
+
+## AC-028 — ADMIN View Ticket Details
+
+**Requirement:** REQ-012
+
+**Given** an authenticated ADMIN and an existing ticket
+**When** the user opens the ticket details
+**Then** the ticket details shall be displayed.
+
+---
+
+## AC-029 — ADMIN Create Ticket
+
+**Requirement:** REQ-001, REQ-012
+
+**Given** an authenticated ADMIN
+**When** valid ticket information is submitted
+**Then** the ticket shall be created successfully.
+
+---
+
+## AC-030 — ADMIN Update Ticket
+
+**Requirement:** REQ-004, REQ-012
+
+**Given** an authenticated ADMIN and an existing ticket
+**When** valid update information is submitted
+**Then** the changes shall be persisted.
+
+---
+
+## AC-031 — USER View Tickets
+
+**Requirement:** REQ-012
+
+**Given** an authenticated USER
+**When** the user requests the ticket list
+**Then** tickets shall be displayed successfully.
+
+---
+
+## AC-032 — USER View Ticket Details
+
+**Requirement:** REQ-012
+
+**Given** an authenticated USER and an existing ticket
+**When** the user opens the ticket details
+**Then** the ticket details shall be displayed.
+
+---
+
+## AC-033 — USER Update Ticket
+
+**Requirement:** REQ-004, REQ-012
+
+**Given** an authenticated USER and an existing ticket
+**When** valid update information is submitted
+**Then** the changes shall be persisted.
+
+---
+
+## AC-034 — USER Create Ticket UI Hidden
+
+**Requirement:** REQ-012
+
+**Given** an authenticated USER
+**When** the ticket list is displayed
+**Then** the Create Ticket action shall not be visible.
+
+---
+
+## AC-035 — USER Forbidden Create Ticket API
+
+**Requirement:** REQ-012
+
+**Given** an authenticated USER
+**When** a `POST /api/tickets` request is submitted
+**Then** the backend shall return `HTTP 403 Forbidden`
+**And** the response shall use the consistent error format.
+
+---
+
+## AC-036 — Required Field Indicators
+
+**Requirement:** REQ-013
+
+**Given** a ticket create, update, or comment form
+**When** the form is displayed
+**Then** every mandatory field label shall display an asterisk (`*`).
+
+---
+
+## AC-037 — Frontend Blank Required Field Prevention
+
+**Requirement:** REQ-013
+
+**Given** a ticket or comment form with blank mandatory fields
+**When** the user attempts to submit
+**Then** submission shall be prevented
+**And** meaningful validation messages shall be displayed.
+
+---
+
+## AC-038 — Whitespace-Only Rejection (Frontend)
+
+**Requirement:** REQ-013
+
+**Given** a mandatory field containing only whitespace
+**When** the user attempts to submit
+**Then** submission shall be prevented
+**And** a meaningful validation message shall be displayed.
+
+---
+
+## AC-039 — Backend Missing Required Fields
+
+**Requirement:** REQ-009, REQ-013
+
+**Given** a request with missing required fields
+**When** the backend processes the request
+**Then** the request shall be rejected with a meaningful validation error.
+
+---
+
+## AC-040 — Backend Whitespace-Only Rejection
+
+**Requirement:** REQ-009, REQ-013
+
+**Given** a request with whitespace-only required field values
+**When** the backend processes the request
+**Then** the request shall be rejected with a meaningful validation error.
+
+---
+
+## AC-041 — Validation Error Display
+
+**Requirement:** REQ-010, REQ-013
+
+**Given** a validation failure
+**When** the frontend receives or detects the error
+**Then** a meaningful human-readable message shall be displayed
+**And** invalid fields shall be visually indicated where appropriate.
+
+---
+
+## AC-042 — Priority Badge Styling
+
+**Requirement:** REQ-014
+
+**Given** a ticket with a priority value
+**When** the priority is displayed in the UI
+**Then** it shall appear as a visually distinct badge/chip consistent throughout the application.
+
+---
+
+## AC-043 — Status Badge Styling
+
+**Requirement:** REQ-015
+
+**Given** a ticket with a status value
+**When** the status is displayed in the UI
+**Then** it shall appear as a visually distinct badge/chip consistent throughout the application.
+
+---
+
+## AC-044 — Full-Width Layout
+
+**Requirement:** REQ-016
+
+**Given** the application is loaded on a desktop viewport
+**When** the user views any page
+**Then** the layout shall use the available viewport width
+**And** shall not be constrained to a narrow centered column.
+
+---
+
+## AC-045 — Responsive Tablet Layout
+
+**Requirement:** REQ-016
+
+**Given** the application is loaded on a tablet viewport
+**When** the user views ticket list or forms
+**Then** the layout shall remain usable and readable.
+
+---
+
+## AC-046 — Responsive Mobile Layout
+
+**Requirement:** REQ-016
+
+**Given** the application is loaded on a mobile viewport
+**When** the user views ticket list or forms
+**Then** the layout shall remain usable without unnecessary horizontal overflow.
+
+---
+
+## AC-047 — Existing Functionality Preserved
+
+**Requirement:** REQ-016
+
+**Given** the layout and UI enhancements are applied
+**When** existing ticket operations are performed
+**Then** all previously supported functionality shall remain intact.
+
+---
+
+## AC-048 — Unauthenticated Access Rejected
+
+**Requirement:** REQ-011, REQ-012
+
+**Given** an unauthenticated client
+**When** a protected ticket API is called
+**Then** the backend shall reject the request with an appropriate authentication error.
